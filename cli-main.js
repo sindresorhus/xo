@@ -32,6 +32,7 @@ const cli = meow(`
 	  --cwd=<dir>       Working directory for files
 	  --stdin           Validate/fix code from stdin
 	  --stdin-filename  Specify a filename for the --stdin option
+	  --verbose			Outputs debug information
 
 	Examples
 	  $ xo
@@ -106,6 +107,9 @@ const cli = meow(`
 		stdinFilename: {
 			type: 'string',
 			alias: 'filename'
+		},
+		verbose: {
+			type: 'boolean'
 		}
 	}
 });
@@ -151,6 +155,16 @@ if (options.nodeVersion) {
 	} else if (!semver.validRange(options.nodeVersion)) {
 		console.error('The `node-engine` option must be a valid semver range (for example `>=6`)');
 		process.exit(1);
+	}
+}
+
+if (options.verbose) {
+	if (options.ignore && Array.isArray(options.ignore)) {
+		for (const ignored of options.ignore) {
+			console.log('IGNORED: ' + ignored);
+		}
+	} else if (options.ignore) {
+		console.log('IGNORED: ' + options.ignore);
 	}
 }
 

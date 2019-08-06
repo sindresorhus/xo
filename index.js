@@ -34,6 +34,15 @@ const processReport = (report, options) => {
 const runEslint = (paths, options) => {
 	const config = optionsManager.buildConfig(options);
 	const engine = new eslint.CLIEngine(config);
+	if (options.verbose) {
+		const eslintExtends = optionsManager.buildConfig(options).baseConfig.extends;
+		for (const extend of eslintExtends) {
+			console.log('ESLINT EXTENDS: ' + extend);
+		}
+
+		console.log('ESLINT CONFIG FILE: ' + engine.options.configFile);
+	}
+
 	const report = engine.executeOnFiles(paths, config);
 	return processReport(report, options);
 };
@@ -89,6 +98,12 @@ module.exports.lintFiles = (patterns, options) => {
 
 	const isEmptyPatterns = patterns.length === 0;
 	const defaultPattern = `**/*.{${options.extensions.join(',')}}`;
+	if (options.verbose) {
+		console.log('EXTENSIONS: ' + options.extensions.join(' | '));
+		for (const ignore of options.ignores) {
+			console.log('IGNORED: ' + ignore);
+		}
+	}
 
 	return globby(
 		isEmptyPatterns ? [defaultPattern] : arrify(patterns),
