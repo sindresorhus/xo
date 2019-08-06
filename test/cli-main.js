@@ -79,9 +79,11 @@ test('ignore files in .gitignore', async t => {
 	t.deepEqual(files, ['index.js', 'test/bar.js']);
 });
 
-test('ignore explicit files when in .gitgnore', async t => {
+test('fail explicit files when in .gitgnore', async t => {
 	const cwd = path.join(__dirname, 'fixtures/gitignore');
-	await t.notThrowsAsync(main(['test/foo.js', '--reporter=json'], {cwd}));
+	const {stderr} = await t.throwsAsync(main(['test/foo.js', '--reporter=json'], {cwd}));
+	const filename = path.normalize('test/foo.js');
+	t.true(stderr.includes(`You cannot run xo on an ignored file ${filename}`));
 });
 
 test('negative gitignores', async t => {
@@ -167,4 +169,24 @@ test('space option with boolean strings', async t => {
 	const falseResult = await t.throwsAsync(main(['--space=false'], {cwd}));
 	t.true(trueResult.stdout.includes('Expected indentation of 2 spaces'));
 	t.true(falseResult.stdout.includes('Expected indentation of 1 tab'));
+});
+
+test('fail explicit files when in ignores array in package.json', async t => {
+	const cwd = path.join(__dirname, 'fixtures/explicit-file-ignores');
+	const {stderr} = await t.throwsAsync(main(['tests/bar.js', '--reporter=json'], {cwd}));
+	const filename = path.normalize('tests/bar.js');
+	t.true(stderr.includes(`You cannot run xo on an ignored file ${filename}`));
+});
+
+test('fail explicit files when in default ignores', async t => {
+	const cwd = path.join(__dirname, 'fixtures/explicit-file-ignores');
+	const {stderr} = await t.throwsAsync(main(['dist/foo.js', '--reporter=json'], {cwd}));
+	const filename = path.normalize('dist/foo.js');
+	t.true(stderr.includes(`You cannot run xo on an ignored file ${filename}`));
+});
+
+test('fail explicit files when in cli ignores', async t => {
+	const cwd = path.join(__dirname, 'fixtures/explicit-file-ignores');
+	const {stderr} = await t.throwsAsync(main(['baz.js', '--ignore', 'baz.js', '--reporter=json'], {cwd}));
+	t.true(stderr.includes('You cannot run xo on an ignored file baz.js'));
 });
